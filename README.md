@@ -9,9 +9,11 @@ Execution time : it can solve up to 1000 equation in 1000 variable only in 3 sec
 
 
 Example
-
+</br>
 Please enter the number of equations : 6
+</br>
 equation 1 : 12x1+7x2-2x3-98x3+x4+3x5-x6=4+84x1-98
+</br>
 equation 2 : 45x1+98x2-98x3=45-98x1+2x5
 equation 3 : 57x1+98x2-89x6=45x1+87x3-54x4-2x5
 equation 4 : -x1+98x2+95x2+98x4=52x6+98
