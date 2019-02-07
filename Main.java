@@ -39,6 +39,6 @@ public class Main {
         long t1 = System.currentTimeMillis();
         GaussianElimination.solve(list);
         long t2 = System.currentTimeMillis();
-        System.out.println("Total Time : " + (t2 - t1));
+        System.out.println("Total Time : " + (t2 - t1) + " ms");
     }
 }
