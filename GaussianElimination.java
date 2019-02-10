@@ -8,12 +8,24 @@ public class GaussianElimination {
     private static float[] B;
     private static List<String> vars;
 
-    /** Gaussian Elimination with Partial Pivoting **/
+    /**
+     * Gaussian Elimination with Partial Pivoting, extracts coefficients from
+     * List of Equation-s
+     **/
     public static void solve(List<Equation> eqList) {
         extractVarNamesList(eqList);
         equationsToArrays(eqList);
+        solve(A, B);
+    }
 
-        // printing Matrix
+    /** Gaussian Elimination with Partial Pivoting **/
+    public static void solve(float[][] A, float[] B) {
+        if (!(A == GaussianElimination.A && B == GaussianElimination.B)) {
+            vars = null;
+            GaussianElimination.A = A;
+            GaussianElimination.B = B;
+        }
+
         System.out.println("\n" + "Matrix : " + "\n");
         printMatrix(A, B);
 
@@ -43,6 +55,7 @@ public class GaussianElimination {
                     A[i][j] -= factor * A[k][j];
             }
         }
+
         /** Print row echelon form **/
         printRowEchelonForm(A, B);
 
@@ -54,11 +67,12 @@ public class GaussianElimination {
                 sum += A[i][j] * solution[j];
             solution[i] = (B[i] - sum) / A[i][i];
         }
+
         /** Print solution **/
         printSolution(solution, vars);
     }
 
-    /** function to print in row echleon form **/
+    /** function to print in row echelon form **/
     public static void printRowEchelonForm(float[][] A, float[] B) {
         int N = B.length;
         System.out.println("\nRow Echelon form : ");
@@ -74,12 +88,21 @@ public class GaussianElimination {
     public static void printSolution(float[] sol, List<String> vars) {
         int N = sol.length;
         System.out.println("\nSolution : ");
-        for (int i = 0; i < N; i++) {
-            System.out.println(vars.get(i) + "=" + sol[i]);
+
+        if (vars == null) {
+            for (int i = 0; i < N; i++) {
+                System.out.println(i + "=" + sol[i]);
+            }
+        }
+
+        else {
+            for (int i = 0; i < N; i++) {
+                System.out.println(vars.get(i) + "=" + sol[i]);
+            }
         }
     }
 
-    public static void extractVarNamesList(List<Equation> list) {
+    private static void extractVarNamesList(List<Equation> list) {
         vars = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             Equation e = list.get(i);
@@ -106,6 +129,7 @@ public class GaussianElimination {
 
         A = new float[n][n];
         B = new float[n];
+
         for (float[] row : A)
             Arrays.fill(row, 0);
 
@@ -122,7 +146,6 @@ public class GaussianElimination {
     }
 
     public static void printMatrix(float[][] arr, float[] constants) {
-
         for (int i = 0; i < constants.length; i++) {
             for (int k = 0; k < constants.length; k++) {
                 System.out.print(arr[i][k] + "   ");

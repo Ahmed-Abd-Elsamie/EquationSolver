@@ -8,7 +8,7 @@ You can put any variable name and repeat the terms. Spaces are ignored
 
 The program will arrange your equations in such way that variables are sorted by name, and if some variable appeared more than once in one equations, coefficients are summed. Then, solve your system of equations using Gaussian Elimination with Partial Pivoting
 
-Execution time : it can solve 1000 equations with 1000 variables in only 3 seconds.
+Execution time : on i7-4700MQ processor, without printing intermediate steps, it takes about 0.15s to solve a system of 1000 random linear equations. It is only 3 times slower than Matlab operation x = A\B (also implemented as GEPP, but vectorized).
 
 Example
 <br/>

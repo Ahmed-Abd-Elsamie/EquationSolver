@@ -6,7 +6,7 @@ import java.util.List;
 public class Equation {
     private String origEq;
     private String idealEq = "";
-    private List<Term> list  = new ArrayList<>();
+    private List<Term> list = new ArrayList<>();
     private float constant = 0;
 
     public Equation(String eq) {
