@@ -1,162 +1,145 @@
-package main;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 public class Equation {
-    private String eq;
-    private List<Term>list;
+    private String origEq;
+    private String idealEq = "";
+    private List<Term> list  = new ArrayList<>();
     private float constant = 0;
-    
-    public Equation(String eq){
-        this.eq = eq;
-        list = new ArrayList<>();
-        IdealizeEq(eq);
-        sortBykey();
+
+    public Equation(String eq) {
+        origEq = eq;
+        IdealizeEq();
+        sortByKey();
     }
-    public float getConstant(){
+
+    public String GetOriginalEquation() {
+        return origEq;
+    }
+
+    public String GetIdealizedEquation() {
+        if (idealEq == "") {
+            StringBuilder sb = new StringBuilder();
+            for (int k = 0; k < list.size(); k++) {
+                String varName = list.get(k).getVar();
+                float coeff = list.get(k).getCoff();
+                if (k != 0 && coeff >= 0) {
+                    sb.append('+');
+                }
+                sb.append(coeff);
+                sb.append(varName);
+            }
+            sb.append("=" + (-1 * constant));
+            idealEq = sb.toString();
+        }
+
+        return idealEq;
+    }
+
+    public float getConstant() {
         return constant;
     }
+
     public List<Term> getList() {
         return list;
     }
-    public void IdealizeEq(String s){
-        int counter = 0;
-        for(int i = 0; i < s.length(); i++){
-            char c = s.charAt(i);
-            if(c == '='){
-                String T = s.substring(counter , i);
-                if(isConst(var(T), String.valueOf(coff(T))) == true){
-                    constant = constant + coff(T);
-                }else{
-                    if(isExist(var(T), -1 * coff(T)) == false){
-                        Term t = new Term();
-                        t.setVar(var(T));
-                        t.setCoff(coff(T));
-                        list.add(t);
-                    }
-                }
-                counter = i + 1;
-                for(int k = i + 1; k < s.length(); k++){
-                    char d = s.charAt(k);
-                    if(d == '+' || d == '-'){
-                        if(k == i + 1&& d == '-'){
-                            continue;
-                        }
-                        String T2 = s.substring(counter , k);
-                        if(isConst(var(T2), String.valueOf(coff(T2))) == true){
-                            constant = constant - coff(T2);
-                        }else{
-                            if(isExist(var(T2), -1 * coff(T2)) == false){
-                                Term t = new Term();
-                                t.setVar(var(T2));
-                                t.setCoff(-1 * coff(T2));
-                                list.add(t);
-                            }
-                        }
-                        counter = k;
-                    }
-                    if(k == s.length() - 1){
-                        String T2 = s.substring(counter, s.length());
-                        if(isConst(var(T2), String.valueOf(coff(T2))) == true){
-                            constant = constant - coff(T2);
-                        }else{
-                            if(isExist(var(T2), -1 * coff(T2)) == false){
-                                Term t = new Term();
-                                t.setVar(var(T2));
-                                t.setCoff(-1 * coff(T2));
-                                list.add(t);
-                            }
-                        }
-                    }
-                }
-                break;
+
+    public Term getTermByName(String var) {
+        for (int i = 0; i < list.size(); i++) {
+            Term t = list.get(i);
+            if (var.equals(t.getVar())) {
+                return t;
             }
-            if(c == '+' || c == '-'){
-                if(i == 0 && c == '-'){
+        }
+
+        return null;
+    }
+
+    private void IdealizeEq() {
+        String s = origEq.replaceAll(" ", "");
+        int leftPos = 0;
+        int sideMultiplier = 1;
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '=') {
+                if (sideMultiplier != 1) {
+                    // syntax error
+                    throw new IllegalArgumentException("2 or more '=' signs");
+                }
+
+                processTerm(s.substring(leftPos, i), sideMultiplier);
+                sideMultiplier = -1;
+                leftPos = i + 1;
+
+                continue;
+            }
+
+            if (c == '+' || c == '-') {
+                if (c == '-' && (i == 0 || s.charAt(i - 1) == '=')) {
                     continue;
                 }
-                String T = s.substring(counter , i);
-                if(isConst(var(T), String.valueOf(coff(T))) == true){
-                    constant = constant + coff(T);
-                }else{
-                    if(isExist(var(T), coff(T)) == false){
-                        Term t = new Term();
-                        t.setVar(var(T));
-                        t.setCoff(coff(T));
-                        list.add(t);
-                    }
-                }
-                counter = i;
+
+                processTerm(s.substring(leftPos, i), sideMultiplier);
+                leftPos = i;
+            }
+        }
+
+        processTerm(s.substring(leftPos), sideMultiplier);
+    }
+
+    private void processTerm(String s, float multiplier) {
+        String varName = extractVarNameFromString(s);
+        float coefficient = extractCoeffFromString(s) * multiplier;
+
+        if (varName == "") {
+            constant += coefficient;
+        } else {
+            Term t = getTermByName(varName);
+            if (t != null) {
+                t.setCoff(t.getCoff() + coefficient);
+            } else {
+                t = new Term();
+                t.setVar(varName);
+                t.setCoff(coefficient);
+                list.add(t);
             }
         }
     }
-    
-    public float coff(String s){
-        String f = s.replace(var(s),"");
-        if(f.equals("")){
-            char c = s.charAt(0);
-            if(c == '0' ||c == '1' ||c == '2' ||c == '3' ||c == '4' ||c == '5' ||c == '6' ||c == '7' ||c == '8' ||c == '9' ||c == '.'|| c == '+'|| c == '-'|| c == '='){
-                return Float.parseFloat(s);
-            }else{
-                return 1;
-            }
-        }
-        if(f.equals("-")){
-            return -1;
-        }else if(f.equals("+")){
+
+    private static float extractCoeffFromString(String s) {
+        String f = s.replace(extractVarNameFromString(s), "");
+
+        if (f.equals("")) {
             return 1;
         }
-        
+
+        if (f.equals("-")) {
+            return -1;
+        } else if (f.equals("+")) {
+            return 1;
+        }
+
         return Float.parseFloat(f);
     }
-    
-    public String var(String s){
-        for(int i = 0; i < s.length(); i++){
+
+    private static String extractVarNameFromString(String s) {
+        for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            if(c == '0' ||c == '1' ||c == '2' ||c == '3' ||c == '4' ||c == '5' ||c == '6' ||c == '7' ||c == '8' ||c == '9' ||c == '.'|| c == '+'|| c == '-'|| c == '='){
-            }else{
+            if (!(Character.isDigit(c) || c == '.' || c == '+' || c == '-')) {
                 return s.substring(i, s.length());
             }
         }
-        return s; // for constants
+        return ""; // for constants
     }
-    
-    public boolean isConst(String var, String coff){
-        if(var.equals(coff)){
-            return true;
-        }else if(coff.equals("-" + var + ".0")){
-            return true;
-        }else if(coff.equals(var + ".0")){
-            return true;
-        }else if((var+".0").equals("+"+coff)){
-            return true;
-        }else if(var.equals("+"+coff)){
-            return true;
-        }
-        return false;
-    }    
-    public boolean isExist(String var , float coff){
-        for(int i = 0; i < list.size(); i++){
-            Term t = list.get(i);
-            if(var.equals(t.getVar())){
-                float sum = t.getCoff() + coff;
-                Term term = new Term();
-                term.setCoff(sum);
-                term.setVar(var);
-                    list.set(i, term);
-                    return true;
-            }
-        }
-        return false;
+
+    private void sortByKey() {
+        Collections.sort(list, NameComparator);
     }
-    
-    public void sortBykey() {
-        Collections.sort(list , NameComparator);
-    } 
-    public static Comparator<Term> NameComparator = new Comparator<Term>() {
+
+    private static Comparator<Term> NameComparator = new Comparator<Term>() {
         @Override
         public int compare(Term e1, Term e2) {
             return e1.getVar().compareTo(e2.getVar());
